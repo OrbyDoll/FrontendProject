@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>2048</h1>
+
+    <!-- Game Menu -->
+    <div id="game-menu" class="game-menu">
+        <h2>Добро пожаловать в 2048!</h2>
+        <p>Объединяйте одинаковые числа, чтобы получить плитку с наибольшим значением!</p>
+
+        <div class="menu-settings">
+            <div class="setting-group">
+                <label for="board-size">Размер поля:</label>
+                <select id="board-size">
+                    <option value="3">3×3</option>
+                    <option value="4" selected>4×4</option>
+                    <option value="5">5×5</option>
+                    <option value="6">6×6</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="menu-buttons">
+            <button id="start-classic">Классический режим</button>
+            <button id="start-time-attack">Режим на время</button>
+            <button id="start-obstacles">Режим с препятствиями</button>
+            <button id="show-leaderboard">Таблица рекордов</button>
+            <button id="how-to-play">Как играть</button>
+        </div>
+    </div>
+
+    <!-- How to Play Instructions -->
+    <div id="instructions" class="instructions hidden">
+        <h2>Как играть:</h2>
+        <p>Используйте клавиши со стрелками для перемещения плиток.</p>
+        <p>Когда две плитки с одинаковыми числами соприкасаются, они объединяются в одну!</p>
+        <p>Цель игры - получить плитку с максимально возможным числом.</p>
+        <h3>Режимы игры:</h3>
+        <ul>
+            <li><strong>Классический режим:</strong> Стандартная игра 2048.</li>
+            <li><strong>Режим на время:</strong> У вас есть 2 минуты, чтобы набрать как можно больше
+                очков.
+            </li>
+            <li><strong>Режим с препятствиями:</strong> На поле есть блокированные клетки, которые
+                нельзя использовать.
+            </li>
+        </ul>
+        <button id="back-to-menu-from-instructions">Назад в меню</button>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="leaderboard-screen hidden">
+        <h2>Таблица рекордов</h2>
+
+        <div class="leaderboard-controls">
+            <div class="control-group">
+                <label for="leaderboard-mode">Режим игры:</label>
+                <select id="leaderboard-mode">
+                    <option value="all">Все режимы</option>
+                    <option value="classic">Классический</option>
+                    <option value="timeAttack">На время</option>
+                    <option value="obstacles">С препятствиями</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="leaderboard-size">Размер поля:</label>
+                <select id="leaderboard-size">
+                    <option value="all">Все размеры</option>
+                    <option value="3">3×3</option>
+                    <option value="4">4×4</option>
+                    <option value="5">5×5</option>
+                    <option value="6">6×6</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="leaderboard-sort">Сортировка:</label>
+                <select id="leaderboard-sort">
+                    <option value="score">По счёту</option>
+                    <option value="time">По времени</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="leaderboard-limit">Показать:</label>
+                <select id="leaderboard-limit">
+                    <option value="5">5 записей</option>
+                    <option value="10" selected>10 записей</option>
+                    <option value="20">20 записей</option>
+                    <option value="50">50 записей</option>
+                    <option value="0">Все записи</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="leaderboard-table-container">
+            <table class="leaderboard-table">
+                <thead>
+                <tr>
+                    <th>Место</th>
+                    <th>Имя</th>
+                    <th>Счёт</th>
+                    <th>Режим</th>
+                    <th>Размер</th>
+                    <th>Дата</th>
+                </tr>
+                </thead>
+                <tbody id="leaderboard-table-body">
+                <!-- Leaderboard entries will be added here by JavaScript -->
+                </tbody>
+            </table>
+            <div id="no-records" class="no-records hidden">
+                Нет записей для отображения
+            </div>
+        </div>
+
+        <button id="back-to-menu-from-leaderboard">Назад в меню</button>
+    </div>
+
+    <!-- Game Container (Hidden initially) -->
+    <div id="game-container" class="game-container hidden">
+        <div class="game-header">
+            <div class="score-container">
+                <div class="score-title">Счёт</div>
+                <span id="score">0</span>
+            </div>
+            <div class="best-container">
+                <div class="best-title">Рекорд</div>
+                <span id="best-score">0</span>
+            </div>
+            <div class="personal-best-container">
+                <div class="personal-best-title">Ваш рекорд</div>
+                <span id="personal-best">0</span>
+            </div>
+            <div id="timer-container" class="timer-container hidden">
+                <div class="timer-title">Время</div>
+                <span id="timer">2:00</span>
+            </div>
+            <button id="new-game">Новая игра</button>
+            <button id="menu-button">Меню</button>
+        </div>
+
+        <div class="game-board">
+            <div class="grid-container">
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+                <div class="grid-row">
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                    <div class="grid-cell"></div>
+                </div>
+            </div>
+
+            <div class="tile-container" id="tile-container">
+                <!-- Tiles will be added here by JavaScript -->
+            </div>
+        </div>
+
+        <div id="game-message" class="game-message hidden">
+            <p></p>
+            <div class="game-message-buttons">
+                <button id="try-again">Попробовать снова</button>
+                <button id="keep-playing" class="hidden">Продолжить игру</button>
+                <button id="back-to-menu-from-game">Вернуться в меню</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Name Input Dialog -->
+    <div id="name-input-dialog" class="dialog hidden">
+        <div class="dialog-content">
+            <h2>Игра окончена!</h2>
+            <p>Ваш счёт: <span id="final-score">0</span></p>
+            <div class="input-group">
+                <label for="player-name">Введите ваше имя:</label>
+                <input type="text" id="player-name" maxlength="20" placeholder="Игрок">
+            </div>
+            <div class="dialog-buttons">
+                <button id="save-score">Сохранить</button>
+                <button id="cancel-save">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
