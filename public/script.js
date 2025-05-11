@@ -379,9 +379,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     saveScoreBtn.addEventListener("click", async () => {
         const name = playerNameInput.value.trim() || "Игрок"
         playerName = name
-
-        // Add score to leaderboard
-        console.log("add score", {name, score, gameMode, boardSize, gameStartTime})
         await addScore({name, score, mode: gameMode, size: boardSize, date: gameStartTime})
 
         // Hide dialog
@@ -1158,11 +1155,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (!response.ok) throw new Error("Failed to fetch global best score")
             const score = await response.json().then((value) => {
                 console.log(value)
+                if (Object.keys(value).length !== 0) {
+                    return value
+                }
+                return 0
             })
-            if (Object.keys(score).length !== 0) {
-                return score
-            }
-            return 0
         } catch (error) {
             console.error("getBestScore error:", error)
             return 0
@@ -1176,11 +1173,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (!response.ok) throw new Error("Failed to fetch personal best score")
             const score = await response.json().then((value) => {
                 console.log(value)
+                if (Object.keys(value).length !== 0) {
+                    return score
+                }
+                return 0
             })
-            if (Object.keys(score).length !== 0) {
-                return score
-            }
-            return 0
         } catch (error) {
             console.error("getPersonalBest error:", error)
             return 0
@@ -1189,6 +1186,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function setGlobalBestScore(score) {
         try {
+            console.log(score)
             const response = await fetch("/api/score/global", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -1205,6 +1203,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function setPersonalBestScore(name, score) {
         try {
+            console.log(name, score)
             const response = await fetch("/api/score/name", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -1239,7 +1238,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function addScore({name, score, mode, size, date}) {
         try {
-            console.log({name, score, mode, size, date})
             const response = await fetch("/api/leaderboard", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
