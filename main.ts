@@ -88,7 +88,6 @@ async function handler(req: Request): Promise<Response> {
     return new Response("Not Found", { status: 404 })
   }
 
-  // Обслуживание статических файлов
   return serveDir(req, {
     fsRoot: "public",
     urlRoot: "",

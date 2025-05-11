@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    // DOM elements
     const gameMenu = document.getElementById("game-menu")
     const gameContainer = document.getElementById("game-container")
     const instructions = document.getElementById("instructions")
@@ -37,9 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const noRecordsMessage = document.getElementById("no-records")
     const boardSizeSelect = document.getElementById("board-size")
 
-    // Tile configuration object
     const tileConfig = {
-        // Base tile configurations
         2: {
             background: "#eee4da",
             color: "#776e65",
@@ -200,7 +197,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 6: "18px",
             },
         },
-        // For higher values
         super: {
             background: "#333",
             color: "#f9f6f2",
@@ -213,7 +209,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
     }
 
-    // Game variables
     let grid = []
     let score = 0
     let bestScore = await getGlobalBestScore() || 0
@@ -224,7 +219,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let gameMode = "classic"
     let boardSize = Number.parseInt(localStorage.getItem("boardSize") || "4")
     let timerInterval = null
-    let timeLeft = 120 // 2 minutes
+    let timeLeft = 120
     let obstacles = []
     let animationInProgress = false
     let playerName = localStorage.getItem("playerName") || "Игрок"
@@ -239,11 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     await initializeGameSettings()
-
-    // Set initial board size from localStorage
     boardSizeSelect.value = boardSize.toString()
-
-    // Menu navigation
     startClassicBtn.addEventListener("click", () => {
         gameMode = "classic"
         boardSize = Number.parseInt(boardSizeSelect.value)
@@ -316,13 +307,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         gameMessage.classList.add("hidden")
     })
 
-    // Board size change
     boardSizeSelect.addEventListener("change", () => {
         boardSize = Number.parseInt(boardSizeSelect.value)
         localStorage.setItem("boardSize", boardSize)
     })
 
-    // Leaderboard controls
     leaderboardModeSelect.addEventListener("change", updateLeaderboardDisplay)
     leaderboardSizeSelect.addEventListener("change", updateLeaderboardDisplay)
     leaderboardSortSelect.addEventListener("change", updateLeaderboardDisplay)
@@ -346,7 +335,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Update personal best score for current game mode and size
     async function updateScores() {
         let oldPersonalBest =  await getPersonalBestScore(playerName) || 0
         let oldGlobalBest = await getGlobalBestScore() || 0
@@ -364,10 +352,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateScores()
         await addScore({name, score, mode: gameMode, size: boardSize, date: gameStartTime})
 
-        // Hide dialog
         nameInputDialog.classList.add("hidden")
-
-        // Update leaderboard display if visible
         if (!leaderboardScreen.classList.contains("hidden")) {
             await updateLeaderboardDisplay()
         }
@@ -377,15 +362,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         nameInputDialog.classList.add("hidden")
     })
 
-    // Show the game board
     function showGame() {
         gameMenu.classList.add("hidden")
         gameContainer.classList.remove("hidden")
     }
 
-    // Initialize the game
     function startGame() {
-        // Reset game state
         grid = createEmptyGrid()
         score = 0
         gameOver = false
@@ -395,7 +377,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         gameEndTime = null
         updateScore()
         updateScores()
-        // Reset timer if in time attack mode
         if (gameMode === "timeAttack") {
             timeLeft = 120
             updateTimer()
@@ -407,13 +388,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             stopTimer()
         }
 
-        // Clear obstacles
         clearObstacles()
-
-        // Create the grid based on board size
         createGrid()
-
-        // Add obstacles if in obstacles mode
         if (gameMode === "obstacles") {
             addObstacles()
         }
@@ -421,12 +397,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         clearTiles()
         gameMessage.classList.add("hidden")
 
-        // Add initial tiles
         addRandomTile()
         addRandomTile()
     }
 
-    // Create an empty grid of the specified size
     function createEmptyGrid() {
         const newGrid = []
         for (let i = 0; i < boardSize; i++) {
@@ -438,21 +412,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         return newGrid
     }
 
-    // Create the grid DOM elements
     function createGrid() {
-        // Clear existing grid
         const gridContainer = document.querySelector(".grid-container")
         gridContainer.innerHTML = ""
-
-        // Add board size class to game board
         const gameBoard = document.querySelector(".game-board")
         gameBoard.className = `game-board board-size-${boardSize}`
-
-        // Set grid template
         gridContainer.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`
         gridContainer.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`
-
-        // Create cells
         for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize; j++) {
                 const cell = document.createElement("div")
@@ -464,12 +430,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Add obstacles to the grid
     function addObstacles() {
-        // Add obstacles based on board size
-        const numObstacles = Math.floor((boardSize * boardSize) / 5) // About 20% of cells
+        const numObstacles = Math.floor((boardSize * boardSize) / 5)
         obstacles = []
-
         for (let i = 0; i < numObstacles; i++) {
             let row, col
             do {
@@ -478,8 +441,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             } while (grid[row][col] !== 0 || isObstacle(row, col))
 
             obstacles.push({row, col})
-
-            // Mark the cell as an obstacle
             const cell = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`)
             if (cell) {
                 cell.classList.add("obstacle")
@@ -487,7 +448,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Clear obstacles
     function clearObstacles() {
         obstacles = []
         document.querySelectorAll(".grid-cell.obstacle").forEach((cell) => {
@@ -495,12 +455,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         })
     }
 
-    // Check if a cell is an obstacle
     function isObstacle(row, col) {
         return obstacles.some((obs) => obs.row === row && obs.col === col)
     }
 
-    // Add a random tile (2 or 4) to an empty cell
     function addRandomTile() {
         if (isFull()) return
 
@@ -518,22 +476,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             const value = Math.random() < 0.9 ? 2 : 4
             grid[randomCell.row][randomCell.col] = value
 
-            // Create tile element with 'new' animation
             createTileElement(randomCell.row, randomCell.col, value, true)
         }
     }
 
-    // Create a tile DOM element with styles from tileConfig
     function createTileElement(row, col, value, isNew = false, isMerged = false) {
         const tile = document.createElement("div")
         tile.className = "tile"
         if (isNew) tile.classList.add("new")
         if (isMerged) tile.classList.add("merged")
 
-        // Get tile configuration
         const config = value > 65536 ? tileConfig.super : tileConfig[value] || tileConfig.super
 
-        // Apply styles from configuration
         tile.style.backgroundColor = config.background
         tile.style.color = config.color
         tile.style.fontSize = config.fontSize[boardSize]
@@ -543,24 +497,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         tile.setAttribute("data-col", col)
         tile.setAttribute("data-value", value)
 
-        // Position the tile
         positionTile(tile, row, col)
 
         tileContainer.appendChild(tile)
         return tile
     }
 
-    // Position a tile on the grid
     function positionTile(tile, row, col) {
-        // Calculate position based on grid layout
-        const gap = 10// Gap between cells (10px total)
-        const cellSize = (470 - gap * (boardSize - 1)) / boardSize// Percentage of container
+        const gap = 10
+        const cellSize = (470 - gap * (boardSize - 1)) / boardSize
 
-        // Calculate position including gaps
         const top = row * (cellSize + gap)
         const left = col * (cellSize + gap)
-
-        // Calculate size (accounting for gaps)
         const size = cellSize
 
         tile.style.top = `${top}px`
@@ -569,7 +517,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         tile.style.height = `${size}px`
     }
 
-    // Clear all tiles from the board
     function clearTiles() {
         tileContainer.innerHTML = ""
     }
@@ -598,14 +545,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Update the timer display
     function updateTimer() {
         const minutes = Math.floor(timeLeft / 60)
         const seconds = timeLeft % 60
         timerDisplay.textContent = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
     }
 
-    // Check if the grid is full
     function isFull() {
         for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize; j++) {
@@ -617,31 +562,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         return true
     }
 
-    // Check if any moves are possible
     function isGameOver() {
-        // Check for empty cells
         if (!isFull()) return false
-
-        // Check for possible merges horizontally
         for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize - 1; j++) {
-                // Skip obstacles
                 if (isObstacle(i, j) || isObstacle(i, j + 1)) continue
-
-                // Check if adjacent cells have the same value
                 if (grid[i][j] === grid[i][j + 1] && grid[i][j] !== 0) {
                     return false
                 }
             }
         }
 
-        // Check for possible merges vertically
         for (let j = 0; j < boardSize; j++) {
             for (let i = 0; i < boardSize - 1; i++) {
-                // Skip obstacles
                 if (isObstacle(i, j) || isObstacle(i + 1, j)) continue
-
-                // Check if adjacent cells have the same value
                 if (grid[i][j] === grid[i + 1][j] && grid[i][j] !== 0) {
                     return false
                 }
@@ -651,17 +585,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         return true
     }
 
-    // Render the current state of the grid with animations
     function renderGrid(previousPositions = null) {
-        // If we have previous positions, animate the movement
         if (previousPositions) {
             animationInProgress = true
 
-            // Get all current tiles
             const tiles = Array.from(tileContainer.querySelectorAll(".tile"))
             const tilesToMerge = []
-
-            // First phase: Move tiles to their new positions
             for (let i = 0; i < boardSize; i++) {
                 for (let j = 0; j < boardSize; j++) {
                     if (grid[i][j] !== 0) {
@@ -669,37 +598,26 @@ document.addEventListener("DOMContentLoaded", async () => {
                         const prevPositions = previousPositions.filter((pos) => pos.newRow === i && pos.newCol === j)
 
                         if (prevPositions.length === 1) {
-                            // Single tile moved to this position
                             const prevPos = prevPositions[0]
-
-                            // Find the tile element
                             const tile = tiles.find(
                                 (t) =>
                                     Number.parseInt(t.getAttribute("data-row")) === prevPos.oldRow &&
                                     Number.parseInt(t.getAttribute("data-col")) === prevPos.oldCol &&
                                     Number.parseInt(t.getAttribute("data-value")) === prevPos.value,
                             )
-
                             if (tile) {
-                                // Update data attributes
                                 tile.setAttribute("data-row", i)
                                 tile.setAttribute("data-col", j)
-
-                                // Animate to new position
                                 positionTile(tile, i, j)
-
-                                // If this tile should be merged later, track it
                                 if (prevPos.merged) {
                                     tilesToMerge.push({
                                         row: i,
                                         col: j,
-                                        value: value / 2, // The original value before merging
+                                        value: value / 2,
                                     })
                                 }
                             }
                         } else if (prevPositions.length === 2) {
-                            // Two tiles merged into this position
-                            // Find both tiles
                             for (const prevPos of prevPositions) {
                                 const tile = tiles.find(
                                     (t) =>
@@ -709,14 +627,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 )
 
                                 if (tile) {
-                                    // Update data attributes
                                     tile.setAttribute("data-row", i)
                                     tile.setAttribute("data-col", j)
-
-                                    // Animate to new position
                                     positionTile(tile, i, j)
-
-                                    // Add to merge list
                                     tilesToMerge.push({
                                         element: tile,
                                         row: i,
@@ -729,43 +642,32 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 }
             }
-
-            // After the first phase of movement completes, handle merges
             setTimeout(() => {
-                // Second phase: Merge tiles
                 for (const mergeInfo of tilesToMerge) {
-                    // For tiles that need to be merged, we'll remove all but one
                     const tilesAtPosition = Array.from(tileContainer.querySelectorAll(".tile")).filter(
                         (t) =>
                             Number.parseInt(t.getAttribute("data-row")) === mergeInfo.row &&
                             Number.parseInt(t.getAttribute("data-col")) === mergeInfo.col,
                     )
-
-                    // Keep only one tile and update its value
                     if (tilesAtPosition.length > 1) {
-                        // Keep the first tile, remove others
                         const keptTile = tilesAtPosition[0]
                         const newValue = grid[mergeInfo.row][mergeInfo.col]
                         keptTile.textContent = newValue
                         keptTile.setAttribute("data-value", newValue)
 
-                        // Update the tile style based on its new value
                         const config = newValue > 65536 ? tileConfig.super : tileConfig[newValue] || tileConfig.super
                         keptTile.style.backgroundColor = config.background
                         keptTile.style.color = config.color
                         keptTile.style.fontSize = config.fontSize[boardSize]
 
-                        // Add merged animation
                         keptTile.classList.add("merged")
 
-                        // Remove other tiles
                         for (let i = 1; i < tilesAtPosition.length; i++) {
                             tilesAtPosition[i].remove()
                         }
                     }
                 }
 
-                // After animations complete, clean up and add a new tile
                 setTimeout(() => {
                     clearTiles()
                     for (let i = 0; i < boardSize; i++) {
@@ -777,7 +679,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                     addRandomTile()
 
-                    // Check for game over after adding new tile
                     if (isGameOver()) {
                         gameOver = true
                         gameEndTime = new Date()
@@ -786,10 +687,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
 
                     animationInProgress = false
-                }, 200) // Time for merge animation
-            }, 150) // Time for movement animation
+                }, 200)
+            }, 150)
         } else {
-            // No animations, just render the current state
             clearTiles()
             for (let i = 0; i < boardSize; i++) {
                 for (let j = 0; j < boardSize; j++) {
@@ -801,18 +701,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Move tiles in a direction
     function moveTiles(direction) {
         if (gameOver && !keepPlaying) return false
         if (animationInProgress) return false
 
-        // Create a copy of the grid to check if it changed
         const previousGrid = JSON.parse(JSON.stringify(grid))
 
-        // Track tile movements for animation
         const tileMovements = []
 
-        // Get current tile positions before moving
         for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize; j++) {
                 if (previousGrid[i][j] !== 0) {
@@ -845,20 +741,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 break
         }
 
-        // If the grid changed, render with animations
         if (moved) {
             renderGrid(tileMovements)
             updateScore()
 
-            // Check for win condition
             checkWinCondition()
         }
 
         return moved
     }
 
-    // Move tiles up
-    // Универсальная функция для обработки слияний
     function handleMerge(row, col, direction, merged, tileMovements, originalValue) {
         const directions = {
             left: {x: 0, y: -1},
@@ -875,7 +767,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (grid[newRow][newCol] !== grid[row][col]) return false;
         if (merged[newRow][newCol]) return false;
 
-        // Помечаем плитки для анимации
         const mergingTile = tileMovements.find(t =>
             t.newRow === row &&
             t.newCol === col &&
@@ -896,7 +787,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (targetTile) targetTile.merged = true;
 
-        // Выполняем слияние
         grid[newRow][newCol] *= 2;
         grid[row][col] = 0;
         score += grid[newRow][newCol];
@@ -905,7 +795,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return true;
     }
 
-// Move Right (Обработка справа налево)
     function moveRight(tileMovements) {
         let moved = false;
         const merged = Array.from({length: boardSize}, () =>
@@ -913,14 +802,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
 
         for (let i = 0; i < boardSize; i++) {
-            // Обрабатываем справа налево
             for (let j = boardSize - 2; j >= 0; j--) {
                 if (grid[i][j] === 0) continue;
 
                 let newJ = j;
                 const originalValue = grid[i][j];
 
-                // Двигаем плитку вправо
                 while (newJ < boardSize - 1 &&
                 grid[i][newJ + 1] === 0 &&
                 !isObstacle(i, newJ + 1)) {
@@ -930,7 +817,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     moved = true;
                 }
 
-                // Обновляем позицию для анимации
                 const tileIndex = tileMovements.findIndex(t =>
                     t.newRow === i &&
                     t.newCol === j &&
@@ -941,17 +827,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     tileMovements[tileIndex].newCol = newJ;
                 }
 
-                // Пытаемся выполнить слияние
                 if (handleMerge(i, newJ, 'right', merged, tileMovements, originalValue)) {
                     moved = true;
-                    newJ++; // После слияния сдвигаемся ещё правее
+                    newJ++;
                 }
             }
         }
         return moved;
     }
 
-// Move Left (Обработка слева направо)
     function moveLeft(tileMovements) {
         let moved = false;
         const merged = Array.from({length: boardSize}, () =>
@@ -965,7 +849,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 let newJ = j;
                 const originalValue = grid[i][j];
 
-                // Двигаем плитку влево
                 while (newJ > 0 &&
                 grid[i][newJ - 1] === 0 &&
                 !isObstacle(i, newJ - 1)) {
@@ -975,7 +858,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     moved = true;
                 }
 
-                // Обновляем позицию для анимации
                 const tileIndex = tileMovements.findIndex(t =>
                     t.newRow === i &&
                     t.newCol === j &&
@@ -986,17 +868,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     tileMovements[tileIndex].newCol = newJ;
                 }
 
-                // Пытаемся выполнить слияние
                 if (handleMerge(i, newJ, 'left', merged, tileMovements, originalValue)) {
                     moved = true;
-                    newJ--; // После слияния сдвигаемся ещё левее
+                    newJ--;
                 }
             }
         }
         return moved;
     }
 
-// Move Down (Обработка снизу вверх)
     function moveDown(tileMovements) {
         let moved = false;
         const merged = Array.from({length: boardSize}, () =>
@@ -1010,7 +890,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 let newI = i;
                 const originalValue = grid[i][j];
 
-                // Двигаем плитку вниз
                 while (newI < boardSize - 1 &&
                 grid[newI + 1][j] === 0 &&
                 !isObstacle(newI + 1, j)) {
@@ -1020,7 +899,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     moved = true;
                 }
 
-                // Обновляем позицию для анимации
                 const tileIndex = tileMovements.findIndex(t =>
                     t.newRow === i &&
                     t.newCol === j &&
@@ -1031,17 +909,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     tileMovements[tileIndex].newRow = newI;
                 }
 
-                // Пытаемся выполнить слияние
                 if (handleMerge(newI, j, 'down', merged, tileMovements, originalValue)) {
                     moved = true;
-                    newI++; // После слияния сдвигаемся ещё ниже
+                    newI++;
                 }
             }
         }
         return moved;
     }
 
-// Move Up (Обработка сверху вниз)
     function moveUp(tileMovements) {
         let moved = false;
         const merged = Array.from({length: boardSize}, () =>
@@ -1055,7 +931,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 let newI = i;
                 const originalValue = grid[i][j];
 
-                // Двигаем плитку вверх
                 while (newI > 0 &&
                 grid[newI - 1][j] === 0 &&
                 !isObstacle(newI - 1, j)) {
@@ -1065,7 +940,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     moved = true;
                 }
 
-                // Обновляем позицию для анимации
                 const tileIndex = tileMovements.findIndex(t =>
                     t.newRow === i &&
                     t.newCol === j &&
@@ -1076,17 +950,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                     tileMovements[tileIndex].newRow = newI;
                 }
 
-                // Пытаемся выполнить слияние
                 if (handleMerge(newI, j, 'up', merged, tileMovements, originalValue)) {
                     moved = true;
-                    newI--; // После слияния сдвигаемся ещё выше
+                    newI--;
                 }
             }
         }
         return moved;
     }
 
-    // Check if the player has won (reached 2048)
     function checkWinCondition() {
         if (won && !keepPlaying) return
 
@@ -1103,7 +975,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Show win message
     function showWin() {
         gameMessageText.textContent = "Вы достигли 2048!"
         gameMessage.classList.remove("hidden")
@@ -1112,7 +983,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         showNameInputDialog()
     }
 
-    // Show game over message
     function showGameOver(message = "Игра окончена!") {
         gameMessageText.textContent = message
         gameMessage.classList.remove("hidden")
@@ -1120,7 +990,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         stopTimer()
     }
 
-    // Show name input dialog
     function showNameInputDialog() {
         finalScoreDisplay.textContent = score
         playerNameInput.value = playerName
@@ -1230,18 +1099,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Update the leaderboard display function
     async function updateLeaderboardDisplay() {
-        // Get filter values
         const modeFilter = leaderboardModeSelect.value
         const sizeFilter = leaderboardSizeSelect.value
         const sortBy = leaderboardSortSelect.value
         const limit = Number.parseInt(leaderboardLimitSelect.value)
 
-        // Make sure leaderboard is up to date
         leaderboard = await getLeaderboard()
 
-        // Filter entries by mode and size
         let filteredEntries = [...leaderboard]
         if (modeFilter !== "all") {
             filteredEntries = filteredEntries.filter((entry) => entry.mode === modeFilter)
@@ -1250,39 +1115,30 @@ document.addEventListener("DOMContentLoaded", async () => {
             filteredEntries = filteredEntries.filter((entry) => entry.size === Number.parseInt(sizeFilter))
         }
 
-        // Sort entries
         if (sortBy === "score") {
             filteredEntries.sort((a, b) => b.score - a.score)
         } else if (sortBy === "time") {
             filteredEntries.sort((a, b) => {
-                // Sort by date (newest first)
                 return new Date(b.date) - new Date(a.date)
             })
         }
 
-        // Apply limit
         if (limit > 0) {
             filteredEntries = filteredEntries.slice(0, limit)
         }
-
-        // Clear table
         leaderboardTableBody.innerHTML = ""
 
-        // Show message if no entries
         if (filteredEntries.length === 0) {
             noRecordsMessage.classList.remove("hidden")
         } else {
             noRecordsMessage.classList.add("hidden")
 
-            // Add entries to table
             filteredEntries.forEach((entry, index) => {
                 const row = document.createElement("tr")
 
-                // Format date
                 const date = new Date(entry.date)
                 const formattedDate = date.toLocaleString()
 
-                // Format mode name
                 let modeName = ""
                 switch (entry.mode) {
                     case "classic":
@@ -1312,7 +1168,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
-    // Keyboard controls
     document.addEventListener("keydown", (e) => {
         if (gameContainer.classList.contains("hidden")) return
         if (nameInputDialog.classList.contains("hidden") === false) return
@@ -1341,15 +1196,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 break
         }
     })
-
-    // Handle Enter key in name input
     playerNameInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
             saveScoreBtn.click()
         }
     })
-
-    // Touch controls
     let touchStartX = 0
     let touchStartY = 0
     let touchEndX = 0
@@ -1393,7 +1244,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const xDiff = touchEndX - touchStartX
         const yDiff = touchEndY - touchStartY
 
-        // Determine which direction had the greater movement
         if (Math.abs(xDiff) > Math.abs(yDiff)) {
             if (xDiff > 0) {
                 moveTiles("right")
@@ -1409,8 +1259,4 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
     bestScoreDisplay.textContent = bestScore
-
-    window.clearLeaderboard = () => {
-        fetch("/api/delete")
-    }
 })
