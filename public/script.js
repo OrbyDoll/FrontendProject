@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Game variables
     let grid = []
     let score = 0
-    let bestScore = localStorage.getItem("bestScore") || 0
+    let bestScore = await getGlobalBestScore() || 0
     let personalBest = 0
     let gameOver = false
     let won = false
@@ -234,11 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function initializeGameSettings() {
         boardSizeSelect.value = boardSize.toString()
-
-        // Initialize leaderboard
         leaderboard = await getLeaderboard()
-
-        // Update UI with loaded values
         bestScoreDisplay.textContent = bestScore
     }
 
@@ -338,7 +334,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (score > bestScore) {
             bestScore = score
             bestScoreDisplay.textContent = bestScore
-            setToKV("bestScore", bestScore) // Async but we don't need to wait
+            setGlobalBestScore(bestScore)
         } else {
             bestScoreDisplay.textContent = bestScore
         }
@@ -353,8 +349,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Get personal best score for a specific game mode and board size
     async function getPersonalBest(mode, size) {
-        // Try to get from dedicated KV entry first for performance
-        const specificBest = await getFromKV(`personalBest_${playerName}_${mode}_${size}`, null)
+        const specificBest = await getPersonalBestScore(playerName)
         if (specificBest !== null) {
             return specificBest
         }
@@ -376,10 +371,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     saveScoreBtn.addEventListener("click", async () => {
         const name = playerNameInput.value.trim() || "Игрок"
         playerName = name
-        await setToKV("playerName", name)
 
         // Add score to leaderboard
-        await addScore(name, score, gameMode, boardSize, gameStartTime, gameEndTime)
+        await addScore({name, score, gameMode, boardSize, gameStartTime, gameEndTime})
 
         // Hide dialog
         nameInputDialog.classList.add("hidden")
@@ -1183,6 +1177,64 @@ document.addEventListener("DOMContentLoaded", async () => {
         playerNameInput.value = playerName
         nameInputDialog.classList.remove("hidden")
         playerNameInput.focus()
+    }
+
+    async function getGlobalBestScore() {
+        try {
+            const response = await fetch('/api/score/global')
+            if (!response.ok) throw new Error("Failed to fetch global best score")
+
+            return await response.json()
+        } catch (error) {
+            console.error("getBestScore error:", error)
+            return 0
+        }
+    }
+
+    async function getPersonalBestScore(name) {
+        try {
+            const params = new URLSearchParams({name})
+            const response = await fetch(`/api/score/name?${params}`)
+            if (!response.ok) throw new Error("Failed to fetch personal best score")
+
+            return await response.json()
+        } catch (error) {
+            console.error("getPersonalBest error:", error)
+            return 0
+        }
+    }
+
+    async function setGlobalBestScore(score) {
+        try {
+            const response = await fetch("/api/score/global", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ score }),
+            })
+
+            if (!response.ok) throw new Error("Failed to add global best score")
+            const result = await response.json()
+            return result
+        } catch (error) {
+            console.error("addScore error:", error)
+            return { success: false, error: error.message }
+        }
+    }
+
+    async function setPersonalBestScore(name, score) {
+        try {
+            const response = await fetch("/api/score/name", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, score }),
+            })
+            if (!response.ok) throw new Error("Failed to add best personal score")
+            const result = await response.json()
+            return result
+        } catch (error) {
+            console.error("addScore error:", error)
+            return { success: false, error: error.message }
+        }
     }
 
     async function getLeaderboard(mode = "all", size = "all", limit = 50) {

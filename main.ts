@@ -39,6 +39,53 @@ async function handler(req: Request): Promise<Response> {
       }
     }
 
+    if (path === "/api/score/global") {
+      try {
+        if (req.method === "GET") {
+          const data = getGlobalBestScore()
+          return new Response(JSON.stringify(data), {
+            headers: {"Content-Type": "application/json"},
+          })
+        } else if (req.method === "POST") {
+          const data = await req.json()
+          const result = setGlobalBestScore(data.score)
+          const id = crypto.randomUUID()
+          return new Response(JSON.stringify({ success: true, id: id }), {
+            headers: { "Content-Type": "application/json" },
+          })
+        }
+      } catch (error) {
+        return new Response(JSON.stringify({ success: false, error: error.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
+    }
+
+    if (path == "/api/score/name") {
+      try {
+        if (req.method === "GET") {
+          const name = url.searchParams.get("name")
+          const data = getPersonalBestScore(name)
+          return new Response(JSON.stringify(data), {
+            headers: {"Content-Type": "application/json"},
+          })
+        } else if (req.method === "POST") {
+          const data = await req.json()
+          const result = setPersonalBestScore(data.name, data.score)
+          const id = crypto.randomUUID()
+          return new Response(JSON.stringify({ success: true, id: id }), {
+            headers: { "Content-Type": "application/json" },
+          })
+        }
+      } catch (error) {
+        return new Response(JSON.stringify({ success: false, error: error.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
+    }
+
     return new Response("Not Found", { status: 404 })
   }
 
@@ -49,6 +96,24 @@ async function handler(req: Request): Promise<Response> {
     showDirListing: true,
     enableCors: true,
   })
+}
+
+async function setGlobalBestScore(score: number): Promise<number> {
+  await kv.set(["globalBest"], score)
+  return score
+}
+
+async function getGlobalBestScore(): Promise<number> {
+  return await kv.get(["globalBest"])
+}
+
+async function setPersonalBestScore(name: string, score: number): Promise<any[]> {
+  await kv.set(["score", name], score)
+  return [name, score]
+}
+
+async function getPersonalBestScore(name: string): Promise<number> {
+  return await kv.get(["score", name])
 }
 
 // Получение рекордов из KV хранилища
