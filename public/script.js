@@ -1,7 +1,3 @@
-window.clearLeaderboard = () => {
-    console.log(1);
-}
-
 document.addEventListener("DOMContentLoaded", async () => {
     // DOM elements
     const gameMenu = document.getElementById("game-menu")
@@ -1409,7 +1405,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }
     }
-
-    // Initialize best score from localStorage
     bestScoreDisplay.textContent = bestScore
+
+    window.clearLeaderboard = () => {
+        setGlobalBestScore(0)
+    }
 })
