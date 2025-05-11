@@ -329,8 +329,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     leaderboardLimitSelect.addEventListener("change", updateLeaderboardDisplay)
 
     function updateScore() {
-        bestScore = getGlobalBestScore()
-        personalBest = getPersonalBestScore(playerName) || 0
         scoreDisplay.textContent = score
 
         if (score > personalBest) {
@@ -351,10 +349,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // Update personal best score for current game mode and size
-    async function updatePersonalBest() {
-        // Get personal best for current mode and size
-        personalBest = await getPersonalBest(gameMode, boardSize)
+    async function updateScores() {
+        personalBest = await getPersonalBestScore(playerName) || 0
         personalBestDisplay.textContent = personalBest
+        bestScore = await getGlobalBestScore() || 0
+        bestScoreDisplay.textContent = bestScore
     }
 
     // Get personal best score for a specific game mode and board size
@@ -414,7 +413,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         gameEndTime = null
 
         // Update personal best for current mode and size
-        updatePersonalBest()
+        updateScores()
 
         // Reset timer if in time attack mode
         if (gameMode === "timeAttack") {
