@@ -1136,7 +1136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return await response.json().then((value) => {
                 console.log("global", value)
                 if (Object.keys(value).length !== 0) {
-                    return value
+                    return value.value
                 }
                 return 0
             })
@@ -1154,7 +1154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return await response.json().then((value) => {
                 console.log("personal", value)
                 if (Object.keys(value).length !== 0) {
-                    return value
+                    return value.value
                 }
                 return 0
             })
