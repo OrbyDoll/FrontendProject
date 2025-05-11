@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let obstacles = []
     let animationInProgress = false
     let playerName = localStorage.getItem("playerName") || "Игрок"
-    let gameStartTime = Date.now().toString()
+    let gameStartTime = new Date().toISOString()
     let gameEndTime = null
     let leaderboard = []
 
@@ -382,7 +382,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Add score to leaderboard
         console.log("add score", {name, score, gameMode, boardSize, gameStartTime})
-        await addScore({name, score, gameMode, boardSize, gameStartTime})
+        await addScore({name, score, mode:gameMode, size:boardSize, date:gameStartTime})
 
         // Hide dialog
         nameInputDialog.classList.add("hidden")
@@ -1140,8 +1140,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const response = await fetch('/api/score/global')
             if (!response.ok) throw new Error("Failed to fetch global best score")
             const score = await response.json()
-            console.log("global", score)
-            if (score) {
+            console.log("global", score, score.length)
+            if (score.length > 0) {
                 return score
             }
             return 0
@@ -1158,7 +1158,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (!response.ok) throw new Error("Failed to fetch personal best score")
             const score = await response.json()
             console.log("personal", score)
-            if (score) {
+            if (score.length > 0) {
                 return score
             }
             return 0
