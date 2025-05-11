@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let obstacles = []
     let animationInProgress = false
     let playerName = localStorage.getItem("playerName") || "Игрок"
-    let gameStartTime = null
+    let gameStartTime = Date.now().toString()
     let gameEndTime = null
     let leaderboard = []
 
@@ -381,7 +381,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         playerName = name
 
         // Add score to leaderboard
-        await addScore({name, score, gameMode, boardSize, gameStartTime, gameEndTime})
+        console.log("add score", {name, score, gameMode, boardSize, gameStartTime})
+        await addScore({name, score, gameMode, boardSize, gameStartTime})
 
         // Hide dialog
         nameInputDialog.classList.add("hidden")
@@ -1219,13 +1220,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-    async function addScore({ name, score, mode, size, date, duration }) {
+    async function addScore({ name, score, mode, size, date }) {
         try {
-            console.log({ name, score, mode, size, date, duration })
+            console.log({ name, score, mode, size, date })
             const response = await fetch("/api/leaderboard", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, score, mode, size, date, duration }),
+                body: JSON.stringify({ name, score, mode, size, date }),
             })
             console.log(response.json())
             if (!response.ok) throw new Error("Failed to add score")

@@ -157,7 +157,6 @@ async function addScore(data: any): Promise<string> {
     mode: data.mode,
     size: data.size,
     date: data.date || new Date().toISOString(),
-    duration: data.duration || null,
   }
 
   // Сохранение в KV хранилище
