@@ -20,5 +20,5 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "frontendpro-14" # Замените на имя вашего проекта в Deno Deploy
+          project: "frontendpro-14" # ÐÐ°Ð¼ÐµÐ½Ð¸ÑÐµ Ð½Ð° Ð¸Ð¼Ñ Ð²Ð°ÑÐµÐ³Ð¾ Ð¿ÑÐ¾ÐµÐºÑÐ° Ð² Deno Deploy
           entrypoint: "main.ts"
