@@ -37,13 +37,13 @@ async function handler(req: Request): Promise<Response> {
     if (path === "/api/score/global") {
       try {
         if (req.method === "GET") {
-          const data = getGlobalBestScore()
+          const data = await getGlobalBestScore()
           return new Response(JSON.stringify(data), {
             headers: {"Content-Type": "application/json"},
           })
         } else if (req.method === "POST") {
           const data = await req.json()
-          const result = setGlobalBestScore(data.score)
+          const result = await setGlobalBestScore(data.score)
           const id = crypto.randomUUID()
           return new Response(JSON.stringify({ success: true, id: id }), {
             headers: { "Content-Type": "application/json" },
@@ -61,13 +61,13 @@ async function handler(req: Request): Promise<Response> {
       try {
         if (req.method === "GET") {
           const name = url.searchParams.get("name")
-          const data = getPersonalBestScore(name)
+          const data = await getPersonalBestScore(name)
           return new Response(JSON.stringify(data), {
             headers: {"Content-Type": "application/json"},
           })
         } else if (req.method === "POST") {
           const data = await req.json()
-          const result = setPersonalBestScore(data.name, data.score)
+          const result = await setPersonalBestScore(data.name, data.score)
           const id = crypto.randomUUID()
           return new Response(JSON.stringify({ success: true, id: id }), {
             headers: { "Content-Type": "application/json" },
