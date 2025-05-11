@@ -81,6 +81,10 @@ async function handler(req: Request): Promise<Response> {
       }
     }
 
+    if (path === "/api/delete") {
+      await dropTable()
+    }
+
     return new Response("Not Found", { status: 404 })
   }
 
@@ -143,6 +147,12 @@ async function addScore(data: any): Promise<string> {
   await kv.set(["leaderboard", id], record)
 
   return id
+}
+
+async function dropTable(): Promise<void> {
+  for await (const entry of kv.list({ prefix: [] })) {
+    await kv.delete(entry.key);
+  }
 }
 
 serve(handler)

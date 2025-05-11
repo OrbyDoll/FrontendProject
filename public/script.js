@@ -348,12 +348,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Update personal best score for current game mode and size
     async function updateScores() {
+        let oldPersonalBest =  await getPersonalBestScore(playerName) || 0
+        let oldGlobalBest = await getGlobalBestScore() || 0
+        personalBest = oldPersonalBest ? oldPersonalBest > personalBest : personalBest
+        bestScore = oldGlobalBest ? oldGlobalBest > bestScore : bestScore
+        personalBestDisplay.textContent = personalBest
+        bestScoreDisplay.textContent = bestScore
         await setGlobalBestScore(bestScore)
         await setPersonalBestScore(playerName, personalBest)
-        personalBest = await getPersonalBestScore(playerName) || 0
-        personalBestDisplay.textContent = personalBest
-        bestScore = await getGlobalBestScore() || 0
-        bestScoreDisplay.textContent = bestScore
     }
 
     saveScoreBtn.addEventListener("click", async () => {
@@ -1409,6 +1411,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     bestScoreDisplay.textContent = bestScore
 
     window.clearLeaderboard = () => {
-        setGlobalBestScore(0)
+        fetch("/api/delete")
     }
 })
