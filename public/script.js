@@ -603,7 +603,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Calculate position based on grid layout
         const gap = 10// Gap between cells (10px total)
         const cellSize = (470 - gap * (boardSize - 1)) / boardSize// Percentage of container
-        console.log(cellSize)
 
         // Calculate position including gaps
         const top = row * (cellSize + gap)
