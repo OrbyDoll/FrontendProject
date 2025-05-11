@@ -39,7 +39,6 @@ async function handler(req: Request): Promise<Response> {
       }
     }
 
-    // Если API запрос не распознан
     return new Response("Not Found", { status: 404 })
   }
 
@@ -53,7 +52,7 @@ async function handler(req: Request): Promise<Response> {
 }
 
 // Получение рекордов из KV хранилища
-export async function getLeaderboard(mode: string, size: string, limit: number): Promise<any[]> {
+async function getLeaderboard(mode: string, size: string, limit: number): Promise<any[]> {
   const leaderboard: any[] = []
 
   // Получаем все записи с префиксом "leaderboard:"
@@ -76,7 +75,7 @@ export async function getLeaderboard(mode: string, size: string, limit: number):
 }
 
 // Добавление нового рекорда в KV хранилище
-export async function addScore(data: any): Promise<string> {
+async function addScore(data: any): Promise<string> {
   // Валидация данных
   if (!data.name || !data.score || !data.mode || !data.size) {
     throw new Error("Missing required fields")

@@ -1,5 +1,3 @@
-import {addScore, getLeaderboard} from "../main.ts"
-
 document.addEventListener("DOMContentLoaded", async () => {
     // DOM elements
     const gameMenu = document.getElementById("game-menu")
@@ -215,28 +213,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
     }
 
-    async function getFromKV(key, defaultValue = null) {
-        try {
-            const kv = await Deno.openKv()
-            const result = await kv.get([key])
-            return result.value ?? defaultValue
-        } catch (error) {
-            console.error(`Error getting ${key} from KV:`, error)
-            return defaultValue
-        }
-    }
-
-    async function setToKV(key, value) {
-        try {
-            const kv = await Deno.openKv()
-            await kv.set([key], value)
-            return true
-        } catch (error) {
-            console.error(`Error setting ${key} in KV:`, error)
-            return false
-        }
-    }
-
     // Game variables
     let grid = []
     let score = 0
@@ -257,11 +233,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     let leaderboard = []
 
     async function initializeGameSettings() {
-        bestScore = Number(await getFromKV("bestScore", 0))
-        boardSize = Number(await getFromKV("boardSize", 4))
-        playerName = await getFromKV("playerName", "Игрок")
-
-        // Set initial board size from KV
         boardSizeSelect.value = boardSize.toString()
 
         // Initialize leaderboard
@@ -1212,6 +1183,43 @@ document.addEventListener("DOMContentLoaded", async () => {
         playerNameInput.value = playerName
         nameInputDialog.classList.remove("hidden")
         playerNameInput.focus()
+    }
+
+    async function getLeaderboard(mode = "all", size = "all", limit = 50) {
+        try {
+            const params = new URLSearchParams({
+                mode,
+                size,
+                limit: limit.toString(),
+            })
+
+            const response = await fetch(`/api/leaderboard?${params}`)
+            if (!response.ok) throw new Error("Failed to fetch leaderboard")
+
+            return await response.json()
+        } catch (error) {
+            console.error("getLeaderboard error:", error)
+            return []
+        }
+    }
+
+
+    async function addScore({ name, score, mode, size, date, duration }) {
+        try {
+            const response = await fetch("/api/leaderboard", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, score, mode, size, date, duration }),
+            })
+
+            if (!response.ok) throw new Error("Failed to add score")
+
+            const result = await response.json()
+            return result
+        } catch (error) {
+            console.error("addScore error:", error)
+            return { success: false, error: error.message }
+        }
     }
 
     // Update the leaderboard display function
