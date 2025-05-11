@@ -350,8 +350,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function updateScores() {
         let oldPersonalBest =  await getPersonalBestScore(playerName) || 0
         let oldGlobalBest = await getGlobalBestScore() || 0
-        personalBest = oldPersonalBest ? oldPersonalBest > personalBest : personalBest
-        bestScore = oldGlobalBest ? oldGlobalBest > bestScore : bestScore
+        personalBest = oldPersonalBest > personalBest ? oldPersonalBest : personalBest
+        bestScore = oldGlobalBest > bestScore ? oldGlobalBest : bestScore
         personalBestDisplay.textContent = personalBest
         bestScoreDisplay.textContent = bestScore
         await setGlobalBestScore(bestScore)
