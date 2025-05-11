@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     // DOM elements
     const gameMenu = document.getElementById("game-menu")
     const gameContainer = document.getElementById("game-container")
@@ -213,6 +213,28 @@ document.addEventListener("DOMContentLoaded", () => {
         },
     }
 
+    async function getFromKV(key, defaultValue = null) {
+        try {
+            const kv = await Deno.openKv()
+            const result = await kv.get([key])
+            return result.value ?? defaultValue
+        } catch (error) {
+            console.error(`Error getting ${key} from KV:`, error)
+            return defaultValue
+        }
+    }
+
+    async function setToKV(key, value) {
+        try {
+            const kv = await Deno.openKv()
+            await kv.set([key], value)
+            return true
+        } catch (error) {
+            console.error(`Error setting ${key} in KV:`, error)
+            return false
+        }
+    }
+
     // Game variables
     let grid = []
     let score = 0
@@ -230,9 +252,24 @@ document.addEventListener("DOMContentLoaded", () => {
     let playerName = localStorage.getItem("playerName") || "Игрок"
     let gameStartTime = null
     let gameEndTime = null
+    let leaderboard = []
 
-    // Initialize leaderboard
-    const leaderboard = loadLeaderboard()
+    async function initializeGameSettings() {
+        bestScore = Number(await getFromKV("bestScore", 0))
+        boardSize = Number(await getFromKV("boardSize", 4))
+        playerName = await getFromKV("playerName", "Игрок")
+
+        // Set initial board size from KV
+        boardSizeSelect.value = boardSize.toString()
+
+        // Initialize leaderboard
+        leaderboard = await loadLeaderboard()
+
+        // Update UI with loaded values
+        bestScoreDisplay.textContent = bestScore
+    }
+
+    await initializeGameSettings()
 
     // Set initial board size from localStorage
     boardSizeSelect.value = boardSize.toString()
@@ -322,21 +359,61 @@ document.addEventListener("DOMContentLoaded", () => {
     leaderboardSortSelect.addEventListener("change", updateLeaderboardDisplay)
     leaderboardLimitSelect.addEventListener("change", updateLeaderboardDisplay)
 
+    function updateScore() {
+        scoreDisplay.textContent = score
+
+        if (score > bestScore) {
+            bestScore = score
+            bestScoreDisplay.textContent = bestScore
+            setToKV("bestScore", bestScore) // Async but we don't need to wait
+        } else {
+            bestScoreDisplay.textContent = bestScore
+        }
+    }
+
+    // Update personal best score for current game mode and size
+    async function updatePersonalBest() {
+        // Get personal best for current mode and size
+        personalBest = await getPersonalBest(gameMode, boardSize)
+        personalBestDisplay.textContent = personalBest
+    }
+
+    // Get personal best score for a specific game mode and board size
+    async function getPersonalBest(mode, size) {
+        // Try to get from dedicated KV entry first for performance
+        const specificBest = await getFromKV(`personalBest_${playerName}_${mode}_${size}`, null)
+        if (specificBest !== null) {
+            return specificBest
+        }
+
+        // Otherwise filter leaderboard entries
+        const playerEntries = leaderboard.filter(
+            (entry) => entry.mode === mode && entry.size === size && entry.name === playerName,
+        )
+
+        // Sort by score in descending order
+        playerEntries.sort((a, b) => b.score - a.score)
+
+        // Return the highest score or 0 if no entries
+        return playerEntries.length > 0 ? playerEntries[0].score : 0
+    }
+
+
     // Name input dialog
-    saveScoreBtn.addEventListener("click", () => {
+    saveScoreBtn.addEventListener("click", async () => {
         const name = playerNameInput.value.trim() || "Игрок"
         playerName = name
-        localStorage.setItem("playerName", name)
+        await setToKV("playerName", name)
 
         // Add score to leaderboard
-        addScoreToLeaderboard(name, score, gameMode, boardSize, gameStartTime, gameEndTime)
+        await addScoreToLeaderboard(name, score, gameMode, boardSize, gameStartTime, gameEndTime)
 
         // Hide dialog
         nameInputDialog.classList.add("hidden")
 
         // Update leaderboard display if visible
         if (!leaderboardScreen.classList.contains("hidden")) {
-            updateLeaderboardDisplay()
+            await updateLeaderboardDisplay()
         }
     })
 
@@ -547,56 +624,56 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Update the score display
-    function updateScore() {
-        scoreDisplay.textContent = score
-
-        if (score > bestScore) {
-            bestScore = score
-            bestScoreDisplay.textContent = bestScore
-            localStorage.setItem("bestScore", bestScore)
-        } else {
-            bestScoreDisplay.textContent = bestScore
-        }
-    }
+    // function updateScore() {
+    //     scoreDisplay.textContent = score
+    //
+    //     if (score > bestScore) {
+    //         bestScore = score
+    //         bestScoreDisplay.textContent = bestScore
+    //         localStorage.setItem("bestScore", bestScore)
+    //     } else {
+    //         bestScoreDisplay.textContent = bestScore
+    //     }
+    // }
 
     // Update personal best score for current game mode and size
-    function updatePersonalBest() {
-        // Get personal best for current mode and size
-        personalBest = getPersonalBest(gameMode, boardSize)
-        personalBestDisplay.textContent = personalBest
-    }
+    // function updatePersonalBest() {
+    //     // Get personal best for current mode and size
+    //     personalBest = getPersonalBest(gameMode, boardSize)
+    //     personalBestDisplay.textContent = personalBest
+    // }
 
     // Get personal best score for a specific game mode and board size
-    function getPersonalBest(mode, size) {
-        // Filter leaderboard entries by mode, size, and player name
-        const playerEntries = leaderboard.filter(
-            (entry) => entry.mode === mode && entry.size === size && entry.name === playerName,
-        )
-
-        // Sort by score in descending order
-        playerEntries.sort((a, b) => b.score - a.score)
-
-        // Return the highest score or 0 if no entries
-        return playerEntries.length > 0 ? playerEntries[0].score : 0
-    }
-
-    // Start the timer for time attack mode
-    function startTimer() {
-        if (timerInterval) clearInterval(timerInterval)
-
-        timerInterval = setInterval(() => {
-            timeLeft--
-            updateTimer()
-
-            if (timeLeft <= 0) {
-                stopTimer()
-                gameOver = true
-                gameEndTime = new Date()
-                showGameOver("Время вышло!")
-                showNameInputDialog()
-            }
-        }, 1000)
-    }
+    // function getPersonalBest(mode, size) {
+    //     // Filter leaderboard entries by mode, size, and player name
+    //     const playerEntries = leaderboard.filter(
+    //         (entry) => entry.mode === mode && entry.size === size && entry.name === playerName,
+    //     )
+    //
+    //     // Sort by score in descending order
+    //     playerEntries.sort((a, b) => b.score - a.score)
+    //
+    //     // Return the highest score or 0 if no entries
+    //     return playerEntries.length > 0 ? playerEntries[0].score : 0
+    // }
+    //
+    // // Start the timer for time attack mode
+    // function startTimer() {
+    //     if (timerInterval) clearInterval(timerInterval)
+    //
+    //     timerInterval = setInterval(() => {
+    //         timeLeft--
+    //         updateTimer()
+    //
+    //         if (timeLeft <= 0) {
+    //             stopTimer()
+    //             gameOver = true
+    //             gameEndTime = new Date()
+    //             showGameOver("Время вышло!")
+    //             showNameInputDialog()
+    //         }
+    //     }, 1000)
+    // }
 
     // Stop the timer
     function stopTimer() {
@@ -1137,16 +1214,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Leaderboard functions
-    function loadLeaderboard() {
-        const savedLeaderboard = localStorage.getItem("leaderboard")
-        return savedLeaderboard ? JSON.parse(savedLeaderboard) : []
+    async function loadLeaderboard() {
+        const savedLeaderboard = await getFromKV("leaderboard", [])
+        return savedLeaderboard
     }
 
-    function saveLeaderboard() {
-        localStorage.setItem("leaderboard", JSON.stringify(leaderboard))
+    async function saveLeaderboard() {
+        await setToKV("leaderboard", leaderboard)
     }
 
-    function addScoreToLeaderboard(name, score, mode, size, startTime, endTime) {
+    async function addScoreToLeaderboard(name, score, mode, size, startTime, endTime) {
         const entry = {
             name: name,
             score: score,
@@ -1157,21 +1234,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         leaderboard.push(entry)
-        saveLeaderboard()
+        await saveLeaderboard()
+
+        // Also store personal best separately for quicker access
+        const currentBest = await getPersonalBest(mode, size)
+        if (score > currentBest) {
+            await setToKV(`personalBest_${name}_${mode}_${size}`, score)
+        }
 
         // Update personal best if this score is higher
-        if (score > getPersonalBest(mode, size)) {
-            updatePersonalBest()
+        if (score > (await getPersonalBest(mode, size))) {
+            await updatePersonalBest()
         }
     }
 
-    // Update the leaderboard display function to format dates more compactly
-    function updateLeaderboardDisplay() {
+    // Update the leaderboard display function
+    async function updateLeaderboardDisplay() {
         // Get filter values
         const modeFilter = leaderboardModeSelect.value
         const sizeFilter = leaderboardSizeSelect.value
         const sortBy = leaderboardSortSelect.value
         const limit = Number.parseInt(leaderboardLimitSelect.value)
+
+        // Make sure leaderboard is up to date
+        leaderboard = await loadLeaderboard()
 
         // Filter entries by mode and size
         let filteredEntries = [...leaderboard]
@@ -1231,13 +1317,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${entry.name}</td>
-        <td>${entry.score}</td>
-        <td>${modeName}</td>
-        <td>${entry.size}×${entry.size}</td>
-        <td>${formattedDate}</td>
-      `
+                    <td>${index + 1}</td>
+                    <td>${entry.name}</td>
+                    <td>${entry.score}</td>
+                    <td>${modeName}</td>
+                    <td>${entry.size}×${entry.size}</td>
+                    <td>${formattedDate}</td>
+                `
 
                 leaderboardTableBody.appendChild(row)
             })
