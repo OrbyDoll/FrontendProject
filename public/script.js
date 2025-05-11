@@ -1259,4 +1259,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
     bestScoreDisplay.textContent = bestScore
+
+    window.cl = () => {
+        fetch("/api/delete")
+    }
 })
