@@ -1,17 +1,13 @@
 import { serve } from "https://deno.land/std@0.204.0/http/server.ts"
 import { serveDir } from "https://deno.land/std@0.204.0/http/file_server.ts"
 
-// Инициализация KV хранилища
 const kv = await Deno.openKv()
 
-// Обработчик запросов
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url)
   const path = url.pathname
 
-  // API для работы с рекордами
   if (path.startsWith("/api/")) {
-    // Получение рекордов
     if (path === "/api/leaderboard" && req.method === "GET") {
       const mode = url.searchParams.get("mode") || "all"
       const size = url.searchParams.get("size") || "all"
@@ -23,7 +19,6 @@ async function handler(req: Request): Promise<Response> {
       })
     }
 
-    // Добавление нового рекорда
     if (path === "/api/leaderboard" && req.method === "POST") {
       try {
         const data = await req.json()
@@ -116,40 +111,27 @@ async function getPersonalBestScore(name: string): Promise<number> {
   return await kv.get(["score", name])
 }
 
-// Получение рекордов из KV хранилища
 async function getLeaderboard(mode: string, size: string, limit: number): Promise<any[]> {
   const leaderboard: any[] = []
 
-  // Получаем все записи с префиксом "leaderboard:"
   const entries = kv.list({ prefix: ["leaderboard"] })
 
   for await (const entry of entries) {
     const record = entry.value as any
 
-    // Фильтрация по режиму и размеру
     if ((mode === "all" || record.mode === mode) && (size === "all" || record.size.toString() === size)) {
       leaderboard.push(record)
     }
   }
-
-  // Сортировка по счету (по убыванию)
   leaderboard.sort((a, b) => b.score - a.score)
-
-  // Применение лимита
   return limit > 0 ? leaderboard.slice(0, limit) : leaderboard
 }
 
-// Добавление нового рекорда в KV хранилище
 async function addScore(data: any): Promise<string> {
-  // Валидация данных
   if (!data.name || !data.score || !data.mode || !data.size) {
     throw new Error("Missing required fields")
   }
-
-  // Создание уникального ID для записи
   const id = crypto.randomUUID()
-
-  // Подготовка записи
   const record = {
     id,
     name: data.name,
@@ -158,12 +140,9 @@ async function addScore(data: any): Promise<string> {
     size: data.size,
     date: data.date || new Date().toISOString(),
   }
-
-  // Сохранение в KV хранилище
   await kv.set(["leaderboard", id], record)
 
   return id
 }
 
-// Запуск сервера
 serve(handler)
