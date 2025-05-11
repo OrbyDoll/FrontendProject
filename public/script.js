@@ -1140,8 +1140,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const response = await fetch('/api/score/global')
             if (!response.ok) throw new Error("Failed to fetch global best score")
             const score = await response.json()
-            console.log("global", score, score.length)
-            if (score.length > 0) {
+            if (Object.keys(score).length !== 0) {
                 return score
             }
             return 0
@@ -1157,8 +1156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const response = await fetch(`/api/score/name?${params}`)
             if (!response.ok) throw new Error("Failed to fetch personal best score")
             const score = await response.json()
-            console.log("personal", typeof score, score.body)
-            if (score.body.length > 0) {
+            if (Object.keys(score).length !== 0) {
                 return score
             }
             return 0
