@@ -53,7 +53,7 @@ async function handler(req: Request): Promise<Response> {
 }
 
 // Получение рекордов из KV хранилища
-async function getLeaderboard(mode: string, size: string, limit: number): Promise<any[]> {
+export async function getLeaderboard(mode: string, size: string, limit: number): Promise<any[]> {
   const leaderboard: any[] = []
 
   // Получаем все записи с префиксом "leaderboard:"
@@ -76,7 +76,7 @@ async function getLeaderboard(mode: string, size: string, limit: number): Promis
 }
 
 // Добавление нового рекорда в KV хранилище
-async function addScore(data: any): Promise<string> {
+export async function addScore(data: any): Promise<string> {
   // Валидация данных
   if (!data.name || !data.score || !data.mode || !data.size) {
     throw new Error("Missing required fields")

@@ -1,3 +1,5 @@
+import {addScore, getLeaderboard} from "../main.ts"
+
 document.addEventListener("DOMContentLoaded", async () => {
     // DOM elements
     const gameMenu = document.getElementById("game-menu")
@@ -263,7 +265,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         boardSizeSelect.value = boardSize.toString()
 
         // Initialize leaderboard
-        leaderboard = await loadLeaderboard()
+        leaderboard = await getLeaderboard()
 
         // Update UI with loaded values
         bestScoreDisplay.textContent = bestScore
@@ -406,7 +408,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         await setToKV("playerName", name)
 
         // Add score to leaderboard
-        await addScoreToLeaderboard(name, score, gameMode, boardSize, gameStartTime, gameEndTime)
+        await addScore(name, score, gameMode, boardSize, gameStartTime, gameEndTime)
 
         // Hide dialog
         nameInputDialog.classList.add("hidden")
@@ -1212,41 +1214,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         playerNameInput.focus()
     }
 
-    // Leaderboard functions
-    async function loadLeaderboard() {
-        const savedLeaderboard = await getFromKV("leaderboard", [])
-        return savedLeaderboard
-    }
-
-    async function saveLeaderboard() {
-        await setToKV("leaderboard", leaderboard)
-    }
-
-    async function addScoreToLeaderboard(name, score, mode, size, startTime, endTime) {
-        const entry = {
-            name: name,
-            score: score,
-            mode: mode,
-            size: size,
-            date: new Date().toISOString(),
-            duration: endTime ? Math.floor((endTime - startTime) / 1000) : null,
-        }
-
-        leaderboard.push(entry)
-        await saveLeaderboard()
-
-        // Also store personal best separately for quicker access
-        const currentBest = await getPersonalBest(mode, size)
-        if (score > currentBest) {
-            await setToKV(`personalBest_${name}_${mode}_${size}`, score)
-        }
-
-        // Update personal best if this score is higher
-        if (score > (await getPersonalBest(mode, size))) {
-            await updatePersonalBest()
-        }
-    }
-
     // Update the leaderboard display function
     async function updateLeaderboardDisplay() {
         // Get filter values
@@ -1256,7 +1223,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const limit = Number.parseInt(leaderboardLimitSelect.value)
 
         // Make sure leaderboard is up to date
-        leaderboard = await loadLeaderboard()
+        leaderboard = await getLeaderboard()
 
         // Filter entries by mode and size
         let filteredEntries = [...leaderboard]
