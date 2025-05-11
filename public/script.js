@@ -1,5 +1,5 @@
 window.clearLeaderboard = () => {
-    console.log(1)
+    console.log(1);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -1149,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function getPersonalBestScore(name) {
         try {
             const params = new URLSearchParams({name:name})
-            const response = await fetch(`/api/score/name?${params}`)
+            const response = await fetch(`/api/score/user?${params}`)
             if (!response.ok) throw new Error("Failed to fetch personal best score")
             return await response.json().then((value) => {
                 console.log("personal", value)
@@ -1166,11 +1166,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function setGlobalBestScore(score) {
         try {
-            console.log(score)
+            console.log("set global", score)
             const response = await fetch("/api/score/global", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({score}),
+                body: JSON.stringify({score:score}),
             })
 
             if (!response.ok) throw new Error("Failed to add global best score")
@@ -1183,11 +1183,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function setPersonalBestScore(name, score) {
         try {
-            console.log(name, score)
-            const response = await fetch("/api/score/name", {
+            console.log("set personal", name, score)
+            const response = await fetch("/api/score/user", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({name, score}),
+                body: JSON.stringify({name:name, score:score}),
             })
             if (!response.ok) throw new Error("Failed to add best personal score")
             return await response.json()

@@ -57,7 +57,7 @@ async function handler(req: Request): Promise<Response> {
       }
     }
 
-    if (path == "/api/score/name") {
+    if (path == "/api/score/user") {
       try {
         if (req.method === "GET") {
           const name = url.searchParams.get("name")
