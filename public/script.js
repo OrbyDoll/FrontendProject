@@ -1157,8 +1157,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const response = await fetch(`/api/score/name?${params}`)
             if (!response.ok) throw new Error("Failed to fetch personal best score")
             const score = await response.json()
-            console.log("personal", score)
-            if (score.length > 0) {
+            console.log("personal", typeof score, score.body)
+            if (score.body.length > 0) {
                 return score
             }
             return 0
@@ -1228,7 +1228,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, score, mode, size, date }),
             })
-            console.log(response.json())
             if (!response.ok) throw new Error("Failed to add score")
             return await response.json()
         } catch (error) {
