@@ -329,6 +329,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     leaderboardLimitSelect.addEventListener("change", updateLeaderboardDisplay)
 
     function updateScore() {
+        bestScore = getGlobalBestScore()
+        personalBest = getPersonalBestScore(playerName) || 0
         scoreDisplay.textContent = score
 
         if (score > personalBest) {
@@ -802,6 +804,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     if (isGameOver()) {
                         gameOver = true
                         gameEndTime = new Date()
+                        updateScore()
                         showGameOver()
                         showNameInputDialog()
                     }
@@ -1160,6 +1163,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
                 return 0
             })
+            return score
         } catch (error) {
             console.error("getBestScore error:", error)
             return 0
@@ -1178,6 +1182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
                 return 0
             })
+            return score
         } catch (error) {
             console.error("getPersonalBest error:", error)
             return 0
