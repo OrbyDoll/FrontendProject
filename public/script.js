@@ -392,6 +392,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         gameStartTime = new Date()
         gameEndTime = null
         updateScore()
+        updateScores()
         // Reset timer if in time attack mode
         if (gameMode === "timeAttack") {
             timeLeft = 120
