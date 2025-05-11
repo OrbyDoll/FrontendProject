@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.204.0/http/server.ts"
 import { serveDir } from "https://deno.land/std@0.204.0/http/file_server.ts"
 
 const kv = await Deno.openKv()
-
+console.log(1)
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url)
   const path = url.pathname

@@ -356,30 +356,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         bestScoreDisplay.textContent = bestScore
     }
 
-    // Get personal best score for a specific game mode and board size
-    async function getPersonalBest(mode, size) {
-        const specificBest = await getPersonalBestScore(playerName)
-        if (specificBest !== null) {
-            return specificBest
-        }
-
-        // Otherwise filter leaderboard entries
-        const playerEntries = leaderboard.filter(
-            (entry) => entry.mode === mode && entry.size === size && entry.name === playerName,
-        )
-
-        // Sort by score in descending order
-        playerEntries.sort((a, b) => b.score - a.score)
-
-        // Return the highest score or 0 if no entries
-        return playerEntries.length > 0 ? playerEntries[0].score : 0
-    }
-
-
-    // Name input dialog
     saveScoreBtn.addEventListener("click", async () => {
         const name = playerNameInput.value.trim() || "Игрок"
         playerName = name
+        updateScores()
         await addScore({name, score, mode: gameMode, size: boardSize, date: gameStartTime})
 
         // Hide dialog
@@ -412,9 +392,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         gameStartTime = new Date()
         gameEndTime = null
 
-        // Update personal best for current mode and size
-        updateScores()
-
         // Reset timer if in time attack mode
         if (gameMode === "timeAttack") {
             timeLeft = 120
@@ -438,8 +415,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             addObstacles()
         }
 
-        // Update UI
-        updateScore()
         clearTiles()
         gameMessage.classList.add("hidden")
 
@@ -803,7 +778,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     if (isGameOver()) {
                         gameOver = true
                         gameEndTime = new Date()
-                        updateScore()
                         showGameOver()
                         showNameInputDialog()
                     }
