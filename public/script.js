@@ -331,6 +331,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     function updateScore() {
         scoreDisplay.textContent = score
 
+        if (score > personalBest) {
+            personalBest = score
+            personalBestDisplay.textContent = personalBest
+            setPersonalBestScore(playerName, score)
+        } else {
+            personalBestDisplay.textContent = personalBest
+        }
+
         if (score > bestScore) {
             bestScore = score
             bestScoreDisplay.textContent = bestScore
@@ -589,59 +597,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         tileContainer.innerHTML = ""
     }
 
-    // Update the score display
-    // function updateScore() {
-    //     scoreDisplay.textContent = score
-    //
-    //     if (score > bestScore) {
-    //         bestScore = score
-    //         bestScoreDisplay.textContent = bestScore
-    //         localStorage.setItem("bestScore", bestScore)
-    //     } else {
-    //         bestScoreDisplay.textContent = bestScore
-    //     }
-    // }
-
-    // Update personal best score for current game mode and size
-    // function updatePersonalBest() {
-    //     // Get personal best for current mode and size
-    //     personalBest = getPersonalBest(gameMode, boardSize)
-    //     personalBestDisplay.textContent = personalBest
-    // }
-
-    // Get personal best score for a specific game mode and board size
-    // function getPersonalBest(mode, size) {
-    //     // Filter leaderboard entries by mode, size, and player name
-    //     const playerEntries = leaderboard.filter(
-    //         (entry) => entry.mode === mode && entry.size === size && entry.name === playerName,
-    //     )
-    //
-    //     // Sort by score in descending order
-    //     playerEntries.sort((a, b) => b.score - a.score)
-    //
-    //     // Return the highest score or 0 if no entries
-    //     return playerEntries.length > 0 ? playerEntries[0].score : 0
-    // }
-    //
-    // // Start the timer for time attack mode
-    // function startTimer() {
-    //     if (timerInterval) clearInterval(timerInterval)
-    //
-    //     timerInterval = setInterval(() => {
-    //         timeLeft--
-    //         updateTimer()
-    //
-    //         if (timeLeft <= 0) {
-    //             stopTimer()
-    //             gameOver = true
-    //             gameEndTime = new Date()
-    //             showGameOver("Время вышло!")
-    //             showNameInputDialog()
-    //         }
-    //     }, 1000)
-    // }
-
-    // Stop the timer
     function stopTimer() {
         if (timerInterval) {
             clearInterval(timerInterval)
@@ -1183,8 +1138,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const response = await fetch('/api/score/global')
             if (!response.ok) throw new Error("Failed to fetch global best score")
-
-            return await response.json()
+            const score = await response.json()
+            if (score) {
+                return score
+            }
+            return 0
         } catch (error) {
             console.error("getBestScore error:", error)
             return 0
@@ -1196,8 +1154,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             const params = new URLSearchParams({name})
             const response = await fetch(`/api/score/name?${params}`)
             if (!response.ok) throw new Error("Failed to fetch personal best score")
-
-            return await response.json()
+            const score = await response.json()
+            if (score) {
+                return score
+            }
+            return 0
         } catch (error) {
             console.error("getPersonalBest error:", error)
             return 0
@@ -1263,11 +1224,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, score, mode, size, date, duration }),
             })
-
+            console.log(response.json())
             if (!response.ok) throw new Error("Failed to add score")
-
-            const result = await response.json()
-            return result
+            return await response.json()
         } catch (error) {
             console.error("addScore error:", error)
             return { success: false, error: error.message }
