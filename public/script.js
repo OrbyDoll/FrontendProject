@@ -1,3 +1,7 @@
+window.clearLeaderboard = () => {
+    console.log(1)
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     // DOM elements
     const gameMenu = document.getElementById("game-menu")
@@ -1129,14 +1133,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const response = await fetch('/api/score/global')
             if (!response.ok) throw new Error("Failed to fetch global best score")
-            const score = await response.json().then((value) => {
-                console.log(value)
+            return await response.json().then((value) => {
+                console.log("global", value)
                 if (Object.keys(value).length !== 0) {
                     return value
                 }
                 return 0
             })
-            return score
         } catch (error) {
             console.error("getBestScore error:", error)
             return 0
@@ -1145,17 +1148,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     async function getPersonalBestScore(name) {
         try {
-            const params = new URLSearchParams({name})
+            const params = new URLSearchParams({name:name})
             const response = await fetch(`/api/score/name?${params}`)
             if (!response.ok) throw new Error("Failed to fetch personal best score")
-            const score = await response.json().then((value) => {
-                console.log(value)
+            return await response.json().then((value) => {
+                console.log("personal", value)
                 if (Object.keys(value).length !== 0) {
-                    return score
+                    return value
                 }
                 return 0
             })
-            return score
         } catch (error) {
             console.error("getPersonalBest error:", error)
             return 0
