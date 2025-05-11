@@ -382,7 +382,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Add score to leaderboard
         console.log("add score", {name, score, gameMode, boardSize, gameStartTime})
-        await addScore({name, score, mode:gameMode, size:boardSize, date:gameStartTime})
+        await addScore({name, score, mode: gameMode, size: boardSize, date: gameStartTime})
 
         // Hide dialog
         nameInputDialog.classList.add("hidden")
@@ -501,7 +501,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 col = Math.floor(Math.random() * boardSize)
             } while (grid[row][col] !== 0 || isObstacle(row, col))
 
-            obstacles.push({ row, col })
+            obstacles.push({row, col})
 
             // Mark the cell as an obstacle
             const cell = document.querySelector(`.grid-cell[data-row="${row}"][data-col="${col}"]`)
@@ -532,7 +532,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         for (let i = 0; i < boardSize; i++) {
             for (let j = 0; j < boardSize; j++) {
                 if (grid[i][j] === 0 && !isObstacle(i, j)) {
-                    emptyCells.push({ row: i, col: j })
+                    emptyCells.push({row: i, col: j})
                 }
             }
         }
@@ -596,6 +596,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Clear all tiles from the board
     function clearTiles() {
         tileContainer.innerHTML = ""
+    }
+
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval)
+
+        timerInterval = setInterval(() => {
+            timeLeft--
+            updateTimer()
+
+            if (timeLeft <= 0) {
+                stopTimer()
+                gameOver = true
+                gameEndTime = new Date()
+                showGameOver("Время вышло!")
+                showNameInputDialog()
+            }
+        }, 1000)
     }
 
     function stopTimer() {
@@ -868,10 +885,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Универсальная функция для обработки слияний
     function handleMerge(row, col, direction, merged, tileMovements, originalValue) {
         const directions = {
-            left:  { x: 0, y: -1 },
-            right: { x: 0, y: 1 },
-            up:    { x: -1, y: 0 },
-            down:  { x: 1, y: 0 }
+            left: {x: 0, y: -1},
+            right: {x: 0, y: 1},
+            up: {x: -1, y: 0},
+            down: {x: 1, y: 0}
         };
 
         const dir = directions[direction];
@@ -915,7 +932,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Move Right (Обработка справа налево)
     function moveRight(tileMovements) {
         let moved = false;
-        const merged = Array.from({ length: boardSize }, () =>
+        const merged = Array.from({length: boardSize}, () =>
             Array(boardSize).fill(false)
         );
 
@@ -961,7 +978,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Move Left (Обработка слева направо)
     function moveLeft(tileMovements) {
         let moved = false;
-        const merged = Array.from({ length: boardSize }, () =>
+        const merged = Array.from({length: boardSize}, () =>
             Array(boardSize).fill(false)
         );
 
@@ -1006,7 +1023,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Move Down (Обработка снизу вверх)
     function moveDown(tileMovements) {
         let moved = false;
-        const merged = Array.from({ length: boardSize }, () =>
+        const merged = Array.from({length: boardSize}, () =>
             Array(boardSize).fill(false)
         );
 
@@ -1051,7 +1068,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Move Up (Обработка сверху вниз)
     function moveUp(tileMovements) {
         let moved = false;
-        const merged = Array.from({ length: boardSize }, () =>
+        const merged = Array.from({length: boardSize}, () =>
             Array(boardSize).fill(false)
         );
 
@@ -1139,7 +1156,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const response = await fetch('/api/score/global')
             if (!response.ok) throw new Error("Failed to fetch global best score")
-            const score = await response.json()
+            const score = await response.json().then((value) => {
+                console.log(value)
+            })
             if (Object.keys(score).length !== 0) {
                 return score
             }
@@ -1155,7 +1174,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const params = new URLSearchParams({name})
             const response = await fetch(`/api/score/name?${params}`)
             if (!response.ok) throw new Error("Failed to fetch personal best score")
-            const score = await response.json()
+            const score = await response.json().then((value) => {
+                console.log(value)
+            })
             if (Object.keys(score).length !== 0) {
                 return score
             }
@@ -1170,16 +1191,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const response = await fetch("/api/score/global", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ score }),
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({score}),
             })
 
             if (!response.ok) throw new Error("Failed to add global best score")
-            const result = await response.json()
-            return result
+            return await response.json()
         } catch (error) {
             console.error("addScore error:", error)
-            return { success: false, error: error.message }
+            return {success: false, error: error.message}
         }
     }
 
@@ -1187,15 +1207,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const response = await fetch("/api/score/name", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, score }),
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({name, score}),
             })
             if (!response.ok) throw new Error("Failed to add best personal score")
-            const result = await response.json()
-            return result
+            return await response.json()
         } catch (error) {
             console.error("addScore error:", error)
-            return { success: false, error: error.message }
+            return {success: false, error: error.message}
         }
     }
 
@@ -1218,19 +1237,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 
-    async function addScore({ name, score, mode, size, date }) {
+    async function addScore({name, score, mode, size, date}) {
         try {
-            console.log({ name, score, mode, size, date })
+            console.log({name, score, mode, size, date})
             const response = await fetch("/api/leaderboard", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, score, mode, size, date }),
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({name, score, mode, size, date}),
             })
             if (!response.ok) throw new Error("Failed to add score")
             return await response.json()
         } catch (error) {
             console.error("addScore error:", error)
-            return { success: false, error: error.message }
+            return {success: false, error: error.message}
         }
     }
 
@@ -1376,7 +1395,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         (e) => {
             e.preventDefault()
         },
-        { passive: false },
+        {passive: false},
     )
 
     document.addEventListener(
