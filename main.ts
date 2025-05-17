@@ -81,9 +81,13 @@ async function handler(req: Request): Promise<Response> {
       }
     }
 
-    if (path === "/api/delete") {
-      await dropTable()
+    if (path === "/api/validate") {
+      await validate();
     }
+
+    // if (path === "/api/delete") {
+    //   await dropTable()
+    // }
 
     return new Response("Not Found", { status: 404 })
   }
@@ -148,9 +152,16 @@ async function addScore(data: any): Promise<string> {
   return id
 }
 
-async function dropTable(): Promise<void> {
+async function validate(): Promise<void> {
   for await (const entry of kv.list({ prefix: [] })) {
-    await kv.delete(entry.key);
+    try {
+      let a = parseInt(entry)
+      if (a % 2 != 0) {
+        kv.delete(entry)
+      }
+    } catch (err) {
+      kv.delete(entry)
+    }
   }
 }
 
