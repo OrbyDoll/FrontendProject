@@ -83,6 +83,14 @@ async function handler(req: Request): Promise<Response> {
 
     if (path === "/api/validate") {
       await validate();
+      return;
+    }
+
+    if (path === "/api/scores") {
+      const entries = await getAllEntries();
+      return new Response(JSON.stringify(entries), {
+        headers: { "Content-Type": "application/json" }
+      })
     }
 
     // if (path === "/api/delete") {
@@ -98,6 +106,10 @@ async function handler(req: Request): Promise<Response> {
     showDirListing: true,
     enableCors: true,
   })
+}
+
+async function getAllEntries(): Promise<any> {
+  return await kv.list({prefix: ["leaderboard"]})
 }
 
 async function setGlobalBestScore(score: number): Promise<number> {
@@ -155,7 +167,7 @@ async function addScore(data: any): Promise<string> {
 async function validate(): Promise<void> {
   for await (const entry of kv.list({ prefix: [] })) {
     try {
-      let a = parseInt(entry)
+      let a = parseInt(entry.value)
       if (a % 2 != 0) {
         kv.delete(entry)
       }
