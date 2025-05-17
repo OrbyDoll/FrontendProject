@@ -22,6 +22,14 @@ async function handler(req: Request): Promise<Response> {
     if (path === "/api/leaderboard" && req.method === "POST") {
       try {
         const data = await req.json()
+        try {
+          let a = parseInt(data.score)
+          if (data.name.length > 64) {
+            throw new Error("Name is too long")
+          }
+        } catch (err) {
+          return new Response("Bad Request", { status: 400 })
+        }
         const result = await addScore(data)
         return new Response(JSON.stringify({ success: true, id: result }), {
           headers: { "Content-Type": "application/json" },
@@ -43,6 +51,14 @@ async function handler(req: Request): Promise<Response> {
           })
         } else if (req.method === "POST") {
           const data = await req.json()
+          try {
+            parseInt(data.score)
+          } catch (error) {
+            return new Response(JSON.stringify({ success: false, error: error.message }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            })
+          }
           const result = await setGlobalBestScore(data.score)
           const id = crypto.randomUUID()
           return new Response(JSON.stringify({ success: true, id: id }), {
@@ -67,6 +83,17 @@ async function handler(req: Request): Promise<Response> {
           })
         } else if (req.method === "POST") {
           const data = await req.json()
+          try {
+            if (data.name.length > 64) {
+              throw new Error("Name is too long")
+            }
+            parseInt(data.score)
+          } catch (error) {
+            return new Response(JSON.stringify({ success: false, error: error.message }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            })
+          }
           const result = await setPersonalBestScore(data.name, data.score)
           const id = crypto.randomUUID()
           return new Response(JSON.stringify({ success: true, id: id }), {
@@ -167,12 +194,12 @@ async function addScore(data: any): Promise<string> {
 async function validate(): Promise<void> {
   for await (const entry of kv.list({ prefix: [] })) {
     try {
-      let a = parseInt(entry.value)
+      let a = parseInt(entry.value.score)
       if (a % 2 != 0) {
-        kv.delete(entry.key)
+        await kv.delete(entry.key)
       }
     } catch (err) {
-      kv.delete(entry.key)
+      await kv.delete(entry.key)
     }
   }
 }
