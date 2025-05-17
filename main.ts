@@ -86,7 +86,7 @@ async function handler(req: Request): Promise<Response> {
       return;
     }
 
-    if (path === "/api/scores") {
+    if (path === "/api/all") {
       const entries = await getAllEntries();
       return new Response(JSON.stringify(entries), {
         headers: { "Content-Type": "application/json" }
@@ -169,10 +169,10 @@ async function validate(): Promise<void> {
     try {
       let a = parseInt(entry.value)
       if (a % 2 != 0) {
-        kv.delete(entry)
+        kv.delete(entry.key)
       }
     } catch (err) {
-      kv.delete(entry)
+      kv.delete(entry.key)
     }
   }
 }
