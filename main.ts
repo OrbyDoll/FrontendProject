@@ -109,7 +109,7 @@ async function handler(req: Request): Promise<Response> {
 }
 
 async function getAllEntries(): Promise<any> {
-  return await kv.list({prefix: ["leaderboard"]})
+  return await kv.list({ prefix: [] })
 }
 
 async function setGlobalBestScore(score: number): Promise<number> {
