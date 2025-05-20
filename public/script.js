@@ -1089,7 +1089,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const response = await fetch("/api/leaderboard", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({name, score, mode, size, date}),
+                body: JSON.stringify({name:name, score:score, mode:mode, size:size, date:date, token:"token_ot_debilov"}),
             })
             if (!response.ok) throw new Error("Failed to add score")
             return await response.json()
