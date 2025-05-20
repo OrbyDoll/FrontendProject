@@ -24,7 +24,7 @@ async function handler(req: Request): Promise<Response> {
         const data = await req.json()
         try {
           let a = parseInt(data.score)
-          if (String(data.name).length > 20 || String(data.size).length > 10 || String(data.mode).length > 10 || String(data.date).length > 20 || data.token != "token_ot_debilov") {
+          if (data.name.length > 20 || data.size.length > 10 || data.mode.length > 10 || data.date.length > 30 || data.token != "token_ot_debilov") {
             throw new Error("Request is too long")
           }
         } catch (err) {
