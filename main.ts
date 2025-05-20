@@ -24,8 +24,8 @@ async function handler(req: Request): Promise<Response> {
         const data = await req.json()
         try {
           let a = parseInt(data.score)
-          if (data.name.length > 20) {
-            throw new Error("Name is too long")
+          if (data.name.length > 20 || data.size.length > 10 || data.mode.length > 10 || data.date.length > 20) {
+            throw new Error("Request is too long")
           }
         } catch (err) {
           return new Response("Bad Request", { status: 400 })
